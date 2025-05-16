@@ -44,7 +44,7 @@ class Product extends Model
 
     public function getImageUrlAttribute()
     {
-        return $this->image ? url('storage/' . $this->image) : null;
+        return asset('storage/' . $this->image);
     }
 
     public function scopeSearch($query, $value) 
@@ -53,9 +53,9 @@ class Product extends Model
     }
 
     public function orderProducts(): HasMany
-{
-    return $this->hasMany(OrderProduct::class); 
-}
+    {
+        return $this->hasMany(OrderProduct::class); 
+    }
 
 }
 

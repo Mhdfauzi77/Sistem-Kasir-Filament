@@ -23,12 +23,16 @@ class Pos extends Component implements HasForms
     public $name_customer = '';
     public $payment_methods;
     public $payment_method_id;
-    public $order_items = []; // ✅ pastikan tidak null
+    public $order_items = []; 
     public $total_price = 0;
     public $gender = '';
     public $payment_method_id_temp = '0';
     public $cash_received = 0;
     public $change = 0;
+
+    protected $listeners = [
+        'scanResult' => 'handleScanResult',
+    ];
 
 
 
@@ -184,7 +188,7 @@ class Pos extends Component implements HasForms
     {
         $this->validate([
             'name_customer' => 'required|string|max:255',
-            'gender' => 'required|in:male,female', // ✅ Perbaikan 'riquired' → 'required'
+            'gender' => 'required|in:male,female', 
             'payment_method_id' => 'required',
         ]);
 
@@ -192,11 +196,11 @@ class Pos extends Component implements HasForms
         'name' => $this->name_customer,
         'gender' => $this->gender,
         'payment_method_id' => $this->payment_method_id,
-        'total_price' => $this->total_price, // ✅ tambahkan iniJ
+        'total_price' => $this->total_price, 
     ]);
 
         foreach ($this->order_items as $item) {
-            OrderProduct::create([ // ✅ Perbaikan penulisan OrderProduct
+            OrderProduct::create([ 
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
                 'quantity' => $item['quantity'],
@@ -209,6 +213,21 @@ class Pos extends Component implements HasForms
 
         return redirect()->to('admin/orders');
     }
+
+    public function handleScanResult($decodeText)
+    {
+        $product = Product::where('barcode', $decodeText)->first();
+
+        if ($product) {
+            $this->addToOrder($product->id);
+        } else {
+            Notification::make()
+                ->title('Produk not found', $decodeText)
+                ->danger()
+                ->send();
+        }
+    }
+    
 
     
 }

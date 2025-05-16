@@ -1,40 +1,35 @@
-<div>
-    <div x-data="{ 
-        open: false,
-        scanner: null
-    }" 
-    x-on:toggle-scanner.window="
-        open = !open;
-        if (open) {
-            $nextTick(() => {
-                scanner = new Html5Qrcode('reader');
-                scanner.start(
-                    { facingMode: 'environment' },
-                    {
-                        fps: 30,
-                        qrbox: { width: 450, height: 450 }
-                    },
-                    (decodedText) => {
-                        $wire.dispatch('scanResult', { decodedText: decodedText });
-                        scanner.stop();
-                        open = false;
-                    },
-                    (error) => console.warn(error)
-                );
-            });
-        } else if (scanner) {
-            scanner.stop();
-        }
-    "
-    x-show="open"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg w-full relative">
-            <h2 class="text-lg font-semibold mb-4">QR Code Scanner</h2>
-            <div id="reader" class="w-full"></div>
-            <button @click="open = false; if (scanner) scanner.stop();" 
-                    class="absolute top-0 right-0 m-2 text-gray-600 hover:text-gray-900 dark:text-gray-400">
-                &times;
-            </button>
-        </div>
+<div x-data="{ open: false }"
+     x-on:toggle-scanner.window="open = true; startScanner()"
+     x-show="open"
+     style="display: none"
+     class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+
+    <div class="bg-white p-4 rounded shadow-lg w-[320px]">
+        <h2 class="text-lg font-semibold mb-2">Scan Barcode</h2>
+        <div id="reader" style="width: 300px; height: 300px;"></div>
+        <button @click="open = false" class="mt-4 bg-red-500 text-white px-4 py-2 rounded">Tutup</button>
     </div>
+
+    {{-- ✅ Tambah script QRCode --}}
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script>
+        function startScanner() {
+            const html5QrCode = new Html5Qrcode("reader");
+            const config = { fps: 10, qrbox: 250 };
+
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText) => {
+                    html5QrCode.stop(); // stop kamera setelah scan
+                    Livewire.emit('barcodeScanned', decodedText); // kirim ke Livewire
+                },
+                (errorMessage) => {
+                    // error bisa diabaikan agar tidak spam console
+                }
+            ).catch((err) => {
+                console.error("Scanner gagal jalan: ", err);
+            });
+        }
+    </script>
 </div>
