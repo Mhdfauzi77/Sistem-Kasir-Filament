@@ -24,6 +24,10 @@ class Product extends Model
         'description',
     ];  
 
+    protected $appends = [
+        'image_url',
+    ];
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
@@ -47,9 +51,11 @@ class Product extends Model
         return asset('storage/' . $this->image);
     }
 
-    public function scopeSearch($query, $value) 
+    public function scopeSearch($query, $term)
     {
-        $query->where("name", "like", "%$value%");
+        return $query->when($term, function ($q) use ($term) {
+            $q->where('name', 'like', '%' . $term . '%');
+        });
     }
 
     public function orderProducts(): HasMany

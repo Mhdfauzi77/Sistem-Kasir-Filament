@@ -11,3 +11,6 @@ Route::get('/', function () {
 Route::get('/download-template', function () {
     return Excel::download(new TemplateExport, 'template.xlsx');
 })->name('download.template');
+
+// routes/web.php
+Route::get('/admin/pos', \App\Livewire\Pos::class);

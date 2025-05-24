@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PaymentMethodResource\Pages;
-use App\Filament\Resources\PaymentMethodResource\RelationManagers;
 use App\Models\PaymentMethod;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -11,16 +10,13 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PaymentMethodResource extends Resource
 {
     protected static ?string $model = PaymentMethod::class;
 
     protected static ?string $navigationIcon = 'heroicon-m-newspaper';
-
     protected static ?int $navigationSort = 4;
-
     protected static ?string $navigationGroup = 'Others';
 
     public static function form(Form $form): Form
@@ -30,15 +26,20 @@ class PaymentMethodResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+
                 Forms\Components\FileUpload::make('image')
                     ->image()
                     ->required()
                     ->label('Image')
-                    ->circular() // buat gambar bulat (opsional)
-                    ->height(50) // atur tinggi gambar
-                    ->width(50)  // atur lebar gambar
-                    ->extraImgAttributes(['style' => 'object-fit: cover']),// supaya proporsional,
+                    ->imageEditor()
+                    ->imagePreviewHeight('100') // menampilkan preview gambar
+                    ->loadingIndicatorPosition('left')
+                    ->uploadButtonPosition('right')
+                    ->removeUploadedFileButtonPosition('right')
+                    ->directory('payment-methods'),
+
                 Forms\Components\Toggle::make('is_cash')
+                    ->label('Is Cash Payment?')
                     ->required(),
             ]);
     }
@@ -49,22 +50,27 @@ class PaymentMethodResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
+
                 Tables\Columns\ImageColumn::make('image')
                     ->label('Image')
-                    ->circular() // buat gambar bulat (opsional)
-                    ->height(50) // atur tinggi gambar
-                    ->width(50)  // atur lebar gambar
-                    ->extraImgAttributes(['style' => 'object-fit: cover']),// supaya proporsional,
+                    ->circular() // ✅ hanya digunakan di sini (untuk tabel)
+                    ->height(50)
+                    ->width(50)
+                    ->extraImgAttributes(['style' => 'object-fit: cover']),
+
                 Tables\Columns\IconColumn::make('is_cash')
                     ->boolean(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
@@ -85,9 +91,7 @@ class PaymentMethodResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

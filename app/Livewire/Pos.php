@@ -227,6 +227,18 @@ class Pos extends Component implements HasForms
                 ->send();
         }
     }
+
+    public function applyBarcode($code)
+    {
+        $product = Product::where('barcode', $code)->first();
+
+        if ($product) {
+            $this->addToOrder($product->id);
+        } else {
+            $this->dispatch('alert', ['message' => 'Produk tidak ditemukan']);
+        }
+    }
+
     
 
     
